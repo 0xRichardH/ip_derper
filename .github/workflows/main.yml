@@ -28,12 +28,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
           
       - name: Login to ghcr.io
         uses: docker/login-action@v2
@@ -51,5 +45,4 @@ jobs:
           context: ./
           push: true
           tags: |
-            io010/ip_derper:latest
-            ghcr.io/io-01/ip_derper:latest
+            ghcr.io/0xRichardH/ip_derper:latest
