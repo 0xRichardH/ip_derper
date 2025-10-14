@@ -45,4 +45,4 @@ jobs:
           context: ./
           push: true
           tags: |
-            ghcr.io/0xRichardH/ip_derper:latest
+            ghcr.io/0xrichardh/ip_derper:latest
