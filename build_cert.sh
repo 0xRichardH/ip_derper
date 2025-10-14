@@ -4,6 +4,12 @@ CERT_HOST=$1
 CERT_DIR=$2
 CONF_FILE=$3
 
+if echo "$CERT_HOST" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+    SAN_ENTRY="IP.1 = $CERT_HOST"
+else
+    SAN_ENTRY="DNS.1 = $CERT_HOST"
+fi
+
 echo "[req]
 default_bits  = 256
 distinguished_name = req_distinguished_name
@@ -25,7 +31,7 @@ subjectAltName = @alt_names
 subjectAltName = @alt_names
 
 [alt_names]
-DNS.1 = $CERT_HOST
+$SAN_ENTRY
 " > "$CONF_FILE"
 
 mkdir -p "$CERT_DIR"
