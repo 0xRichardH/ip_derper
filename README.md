@@ -56,6 +56,33 @@ services:
 | `DERP_STUN` | `true` | Enable STUN server |
 | `DERP_VERIFY_CLIENTS` | `false` | Verify client certificates |
 
+## Tailscale Configuration
+
+Add this custom DERP server to your Tailscale ACL configuration:
+
+```json
+"derpMap": {
+  "OmitDefaultRegions": false,
+  "Regions": {
+    "901": {
+      "RegionID": 901,
+      "RegionCode": "your-region",
+      "RegionName": "your-region-name",
+      "Nodes": [
+        {
+          "Name": "custom-name",
+          "RegionID": 901,
+          "HostName": "your-ip-or-hostname",
+          "DERPPort": 12345,
+          "STUNPort": 3478,
+          "InsecureForTests": true
+        }
+      ]
+    }
+  }
+}
+```
+
 ## Building from Source
 
 ```bash
