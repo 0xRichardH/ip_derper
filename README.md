@@ -81,11 +81,8 @@ openssl x509 -in /tmp/certs/192.0.2.1.crt -text -noout | grep -A2 "Subject Alter
 1. **Build Time**: The CI/CD pipeline patches `tailscale/cmd/derper/cert.go` to remove ServerName validation
 2. **Runtime**: The `build_cert.sh` script detects if `DERP_HOST` is an IP address and generates the appropriate SAN (IP vs DNS)
 3. **Certificate**: Self-signed EC certificate with 20-year validity
+4. **Auto-updates**: Tailscale submodule syncs weekly (every Monday at 2:00 AM UTC) via GitHub Actions
 
 ## Development
 
 See [AGENTS.md](AGENTS.md) for development guidelines.
-
-## License
-
-Based on [Tailscale](https://github.com/tailscale/tailscale) (BSD-3-Clause)
