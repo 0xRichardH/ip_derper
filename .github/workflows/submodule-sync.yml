@@ -50,8 +50,8 @@ jobs:
         # Get changes between old and new commit
         CHANGELOG=$(git log --pretty=format:"- %s (%h)" $OLD_COMMIT..$NEW_COMMIT || echo "No changes")
         
-        mkdir -p ../changelog
-        CHANGELOG_FILE="../changelog/$(date +%Y%m%d)-update.md"
+        mkdir -p ../changelogs
+        CHANGELOG_FILE="../changelogs/$(date +%Y%m%d)-update.md"
         
         cat > $CHANGELOG_FILE << EOF
         # Tailscale Update - $(date +%Y-%m-%d)
