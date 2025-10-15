@@ -54,22 +54,18 @@ jobs:
           CHANGELOG=$(git log --pretty=format:"- %s (%h)" -n 20 || echo "No recent changes")
           
           # Save to file
-          cat > ../release_notes.md << 'EOF'
-## Tailscale DERP Server Build
-
-EOF
-          cat >> ../release_notes.md << EOF
-**Tailscale Version**: $TAILSCALE_VERSION
-**Build Date**: $(date +%Y-%m-%d)
-**Commit**: $(cd .. && git rev-parse HEAD)
-
-### Recent Tailscale Changes
-$CHANGELOG
-
-### Modifications
-- Removed ServerName validation in cert.go for IP address support
-- Added automatic IP SAN generation in certificates
-EOF
+          echo "## Tailscale DERP Server Build" > ../release_notes.md
+          echo "" >> ../release_notes.md
+          echo "**Tailscale Version**: $TAILSCALE_VERSION" >> ../release_notes.md
+          echo "**Build Date**: $(date +%Y-%m-%d)" >> ../release_notes.md
+          echo "**Commit**: $(cd .. && git rev-parse HEAD)" >> ../release_notes.md
+          echo "" >> ../release_notes.md
+          echo "### Recent Tailscale Changes" >> ../release_notes.md
+          echo "$CHANGELOG" >> ../release_notes.md
+          echo "" >> ../release_notes.md
+          echo "### Modifications" >> ../release_notes.md
+          echo "- Removed ServerName validation in cert.go for IP address support" >> ../release_notes.md
+          echo "- Added automatic IP SAN generation in certificates" >> ../release_notes.md
           
           cat ../release_notes.md
 
