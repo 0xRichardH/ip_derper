@@ -54,25 +54,28 @@ jobs:
           CHANGELOG=$(git log --pretty=format:"- %s (%h)" -n 20 || echo "No recent changes")
           
           # Save to file
-          cat > ../release_notes.md << EOF
-          ## Tailscale DERP Server Build
-          
-          **Tailscale Version**: $TAILSCALE_VERSION
-          **Build Date**: $(date +%Y-%m-%d)
-          **Commit**: $(cd .. && git rev-parse HEAD)
-          
-          ### Recent Tailscale Changes
-          $CHANGELOG
-          
-          ### Modifications
-          - Removed ServerName validation in cert.go for IP address support
-          - Added automatic IP SAN generation in certificates
-          EOF
+          cat > ../release_notes.md << 'EOF'
+## Tailscale DERP Server Build
+
+EOF
+          cat >> ../release_notes.md << EOF
+**Tailscale Version**: $TAILSCALE_VERSION
+**Build Date**: $(date +%Y-%m-%d)
+**Commit**: $(cd .. && git rev-parse HEAD)
+
+### Recent Tailscale Changes
+$CHANGELOG
+
+### Modifications
+- Removed ServerName validation in cert.go for IP address support
+- Added automatic IP SAN generation in certificates
+EOF
           
           cat ../release_notes.md
 
       # Runs a single command using the runners shell
       - name: Build and push Docker images to docker.io and ghcr.io
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v2
         with:
           file: 'Dockerfile'

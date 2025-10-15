@@ -23,6 +23,7 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         submodules: true
+        fetch-depth: 0
 
     # Update references
     - name: Git Sumbodule Update
@@ -37,7 +38,11 @@ jobs:
         NEW_COMMIT=$(git rev-parse HEAD)
         echo "old_commit=$OLD_COMMIT" >> $GITHUB_OUTPUT
         echo "new_commit=$NEW_COMMIT" >> $GITHUB_OUTPUT
-        echo "has_changes=$([[ "$OLD_COMMIT" != "$NEW_COMMIT" ]] && echo "true" || echo "false")" >> $GITHUB_OUTPUT
+        if [ "$OLD_COMMIT" != "$NEW_COMMIT" ]; then
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+        else
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+        fi
 
     - name: Generate changelog
       if: steps.submodule_update.outputs.has_changes == 'true'
@@ -53,16 +58,19 @@ jobs:
         mkdir -p ../changelogs
         CHANGELOG_FILE="../changelogs/$(date +%Y%m%d)-update.md"
         
-        cat > $CHANGELOG_FILE << EOF
-        # Tailscale Update - $(date +%Y-%m-%d)
-        
-        **Tailscale Version**: $TAILSCALE_VERSION
-        **Previous Commit**: $OLD_COMMIT
-        **New Commit**: $NEW_COMMIT
-        
-        ## Changes
-        $CHANGELOG
-        EOF
+        cat > $CHANGELOG_FILE << 'EOF'
+# Tailscale Update
+EOF
+        cat >> $CHANGELOG_FILE << EOF
+
+**Date**: $(date +%Y-%m-%d)
+**Tailscale Version**: $TAILSCALE_VERSION
+**Previous Commit**: $OLD_COMMIT
+**New Commit**: $NEW_COMMIT
+
+## Changes
+$CHANGELOG
+EOF
         
         cat $CHANGELOG_FILE
 
