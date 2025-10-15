@@ -36,6 +36,12 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate version tags
+        id: meta
+        run: |
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "date=$(date +%Y%m%d)" >> $GITHUB_OUTPUT
+
       # Runs a single command using the runners shell
       - name: Build and push Docker images to docker.io and ghcr.io
         uses: docker/build-push-action@v2
@@ -46,3 +52,4 @@ jobs:
           push: true
           tags: |
             ghcr.io/0xrichardh/ip_derper:latest
+            ghcr.io/0xrichardh/ip_derper:${{ steps.meta.outputs.date }}-${{ steps.meta.outputs.sha_short }}
