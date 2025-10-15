@@ -26,13 +26,50 @@ jobs:
 
     # Update references
     - name: Git Sumbodule Update
+      id: submodule_update
       run: |
+        cd tailscale
+        OLD_COMMIT=$(git rev-parse HEAD)
+        cd ..
         git pull --recurse-submodules
         git submodule update --remote --recursive
+        cd tailscale
+        NEW_COMMIT=$(git rev-parse HEAD)
+        echo "old_commit=$OLD_COMMIT" >> $GITHUB_OUTPUT
+        echo "new_commit=$NEW_COMMIT" >> $GITHUB_OUTPUT
+        echo "has_changes=$([[ "$OLD_COMMIT" != "$NEW_COMMIT" ]] && echo "true" || echo "false")" >> $GITHUB_OUTPUT
+
+    - name: Generate changelog
+      if: steps.submodule_update.outputs.has_changes == 'true'
+      run: |
+        cd tailscale
+        TAILSCALE_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "unknown")
+        OLD_COMMIT=${{ steps.submodule_update.outputs.old_commit }}
+        NEW_COMMIT=${{ steps.submodule_update.outputs.new_commit }}
+        
+        # Get changes between old and new commit
+        CHANGELOG=$(git log --pretty=format:"- %s (%h)" $OLD_COMMIT..$NEW_COMMIT || echo "No changes")
+        
+        mkdir -p ../changelog
+        CHANGELOG_FILE="../changelog/$(date +%Y%m%d)-update.md"
+        
+        cat > $CHANGELOG_FILE << EOF
+        # Tailscale Update - $(date +%Y-%m-%d)
+        
+        **Tailscale Version**: $TAILSCALE_VERSION
+        **Previous Commit**: $OLD_COMMIT
+        **New Commit**: $NEW_COMMIT
+        
+        ## Changes
+        $CHANGELOG
+        EOF
+        
+        cat $CHANGELOG_FILE
 
     - name: Commit update
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-        git commit -am "Auto updated submodule references" && git push || echo "No changes to commit"
+        git add -A
+        git commit -m "chore: auto updated submodule references" && git push || echo "No changes to commit"

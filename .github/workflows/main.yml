@@ -41,6 +41,35 @@ jobs:
         run: |
           echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
           echo "date=$(date +%Y%m%d)" >> $GITHUB_OUTPUT
+          echo "version=$(date +%Y%m%d)-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          cd tailscale
+          TAILSCALE_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "unknown")
+          echo "tailscale_version=$TAILSCALE_VERSION" >> $GITHUB_OUTPUT
+          
+          # Get recent commits from Tailscale
+          CHANGELOG=$(git log --pretty=format:"- %s (%h)" -n 20 || echo "No recent changes")
+          
+          # Save to file
+          cat > ../release_notes.md << EOF
+          ## Tailscale DERP Server Build
+          
+          **Tailscale Version**: $TAILSCALE_VERSION
+          **Build Date**: $(date +%Y-%m-%d)
+          **Commit**: $(cd .. && git rev-parse HEAD)
+          
+          ### Recent Tailscale Changes
+          $CHANGELOG
+          
+          ### Modifications
+          - Removed ServerName validation in cert.go for IP address support
+          - Added automatic IP SAN generation in certificates
+          EOF
+          
+          cat ../release_notes.md
 
       # Runs a single command using the runners shell
       - name: Build and push Docker images to docker.io and ghcr.io
@@ -53,3 +82,15 @@ jobs:
           tags: |
             ghcr.io/0xrichardh/ip_derper:latest
             ghcr.io/0xrichardh/ip_derper:${{ steps.meta.outputs.date }}-${{ steps.meta.outputs.sha_short }}
+
+      - name: Create Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.meta.outputs.version }}
+          name: Release v${{ steps.meta.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
